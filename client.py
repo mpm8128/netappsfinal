@@ -17,7 +17,7 @@ def client_callback(ch, method, properties, body):
     #maintain list of headlines
     #prune old headlines
     #display "recent" headlines
-    #	might want to do these things in another thread
+    #	might want to do these things in another thread / process
     
     #time_cutoff = current time - 1 hour (in seconds)
     time_cutoff = int(time.time()) - 3600
