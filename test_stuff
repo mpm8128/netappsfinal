@@ -1,0 +1,7 @@
+#run the test
+./message_broker.py &
+./client.py "#" &
+./publish_test.py
+
+#cleanup - kill leftover python processes
+ps -af | grep .py | grep -v grep | sed s/\ *\ /\ /g | cut -f2 -d ' ' | xargs kill > /dev/null
