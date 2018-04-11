@@ -20,9 +20,9 @@ if __name__ == "__main__":
 
     channel.exchange_declare(rmq_params["exchange"], exchange_type='topic')
 
-    channel.queue_declare("debug_queue", auto_delete=True)
-    channel.queue_bind(exchange=rmq_params["exchange"], queue="debug_queue", 
-                        routing_key="#")
-
-    channel.basic_consume(debug_callback, queue="debug_queue", no_ack=True)
-    channel.start_consuming()
+    #channel.queue_declare("debug_queue", auto_delete=True)
+    #channel.queue_bind(exchange=rmq_params["exchange"], queue="debug_queue", 
+    #                    routing_key="#")
+    #
+    #channel.basic_consume(debug_callback, queue="debug_queue", no_ack=True)
+    #channel.start_consuming()

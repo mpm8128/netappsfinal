@@ -1,3 +1,4 @@
+#! /bin/sh
 #run the test
 ./message_broker.py &
 ./client.py "#" &

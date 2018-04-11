@@ -1,0 +1,14 @@
+#! /bin/sh
+
+#sets up the exchange
+./message_broker.py
+
+for i in `seq 1 100`
+do
+	./client.py "#" &
+done
+
+./publish_test.py
+
+#cleanup - kill leftover python processes
+#ps -af | grep .py | grep -v grep | sed s/\ *\ /\ /g | cut -f2 -d ' ' | xargs kill > /dev/null
