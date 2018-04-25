@@ -8,7 +8,7 @@ sample_text = "Attributes allow displaying text in highlighted forms. "
 #sample_list = []
 sample_list = ["item 1", "item 2", "item 3", "item 4"]
 
-list_lock = threading.Lock()
+list_lock = threading.RLock()
 
 frametime = 0.1
 display_len = 50
