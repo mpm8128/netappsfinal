@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+
+<channel>
+  <title>ECE 4564 Test Feed</title>
+  <link>https://vt.edu</link>
+  <description>ECE 4564 Test Feed</description>
+  <!--<item>
+    <title>Canvas Link</title>
+    <link>https://canvas.vt.edu/</link>
+    <description>A link to Canvas</description>
+  </item>-->
+  <item>
+    <title>[Insert witty headline here]</title>
+    <link>https://google.com</link>
+    <description>Testing!!</description>
+  </item>
+</channel>
+
+</rss>
