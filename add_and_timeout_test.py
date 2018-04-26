@@ -15,7 +15,7 @@ max_y = 0
 frametime = 0.1
 display_len = 50
 separator = " ||| "
-cutoff = 60
+cutoff = 30
 
 def time_is_good(timestamp):
 	global cutoff
@@ -33,10 +33,12 @@ def get_next_item():
 	item = ""
 	if headline_list:
 		(headline, timestamp) = headline_list.pop(0)
-		item = headline
+		item = headline + ";; " + str(timestamp % 3600)
+		#item = headline
 		if(time_is_good(timestamp)):
 			headline_list.append((headline, timestamp))
 		else:
+			print("\n" + headline + " " + str(timestamp) + " timed out at: " + str(time.time()))
 			item = get_next_item()
 
 	list_lock.release()
@@ -71,7 +73,7 @@ def display3(stdscr):
 		stdscr.refresh()
 		time.sleep(frametime)
 		framecount += 1
-		if (framecount % 60 == 0) and q < 10:
+		if (framecount % 30 == 0) and q < 10:
 			list_lock.acquire()
 			headline_list.append( (("item " + str(q)), int(time.time())) )
 			list_lock.release()
