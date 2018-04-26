@@ -16,10 +16,11 @@ list_lock = threading.RLock()
 frametime = 0.1
 display_len = 50
 separator = " ||| "
+cutoff_sec = 60
 
 def time_is_good(timestamp):
 	#time_cutoff = current time - 1 hour (in seconds)
-	time_cutoff = int(time.time()) - 3600
+	time_cutoff = int(time.time()) - 60
 	if timestamp > time_cutoff:
 		return True
 	else:
@@ -34,19 +35,20 @@ def time_is_good(timestamp):
 #if the list is empty (or becomes empty as timed-out headlines
 #	are discarded), this function returns an empty string
 def get_next_item():
-	global headline_list
-	list_lock.acquire()
+    global headline_list
+    list_lock.acquire()
+    
+    item = ""
+    if headline_list:
+        (headline, timestamp) = headline_list.pop(0)
+        if(time_is_good(timestamp)):
+            headline_list.append((headline, timestamp))
+            item = headline
+        else:
+            item = get_next_item()
 
-	item = ""
-	if headline_list:
-		(headline, timestamp) = headline_list.pop(0)
-		if(time_is_good(timestamp)):
-			headline_list.append((headline, timestamp))
-		else:
-			item = get_next_item()
-
-	list_lock.release()
-	return headline
+    list_lock.release()
+    return item
 
 #main function of the display thread
 def display3(stdscr):
@@ -81,7 +83,7 @@ def client_callback(ch, method, properties, body):
 	headline_list.append(item)
 	list_lock.release()
 
-if __name__ == "__main__":
+def setup_queues(bindings):
     #setup rabbitmq stuff
     credentials = pika.PlainCredentials(rmq_params["username"], rmq_params["password"])
     parameters = pika.ConnectionParameters(virtual_host=rmq_params["vhost"], 
@@ -92,20 +94,25 @@ if __name__ == "__main__":
     result = channel.queue_declare(exclusive=True)
     queue_name = result.method.queue
 	
-    binding_keys = sys.argv[1:]
+    binding_keys = bindings[1:]
     if not binding_keys:
-        #usage statement
-        sys.exit(1)
+        print("invalid topic")
+        return
 
     for binding_key in binding_keys:
         channel.queue_bind(exchange=rmq_params["exchange"], queue=queue_name,
                             routing_key=binding_key)
 
-        channel.basic_consume(client_callback, queue=queue_name, no_ack=True)
-        channel.start_consuming()
+    channel.basic_consume(client_callback, queue=queue_name, no_ack=True)
+    channel.start_consuming()
 
-        print("nonsense")
-        #spawn display thread:
-        curses.wrapper(display3)
+if __name__ == "__main__":
+    #spawn display thread:
+    queue_thread = threading.Thread(target=setup_queues, kwargs={"bindings": (sys.argv)})
+    queue_thread.start()
+    
+    display_thread = threading.Thread(curses.wrapper(display3))
+    display_thread.start()
 
-
+    display_thread.join()
+    queue_thread.join()

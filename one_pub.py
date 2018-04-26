@@ -4,14 +4,15 @@ import pika
 from rmq_params import rmq_params
 import pickle
 import time
+import sys
 
 server_ip = '172.29.51.245'
 server_port = 5672
 
 
-def send_message(headline, timestamp):
+def send_message(headline, timestamp, r_key):
     to_send = pickle.dumps((headline,timestamp))
-    channel.basic_publish(exchange=rmq_params["exchange"], routing_key="r_key", 
+    channel.basic_publish(exchange=rmq_params["exchange"], routing_key=r_key, 
                                 body=to_send)
 
 
@@ -24,12 +25,6 @@ if __name__ == "__main__":
     channel = connection.channel()
 
     time.sleep(2)
-    send_message("test 0", int(time.time()))
-    time.sleep(1)
-    send_message("test 1", int(time.time())-1800)
-    time.sleep(1)
-    send_message("test 2", int(time.time())-4000)
-    time.sleep(1)
-    send_message("test 3", int(time.time()))
+    send_message(sys.argv[1], int(time.time()), sys.argv[2])
 
     connection.close()
