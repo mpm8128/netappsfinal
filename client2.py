@@ -16,15 +16,17 @@ list_lock = threading.RLock()
 frametime = 0.1
 display_len = 50
 separator = " ||| "
-cutoff_sec = 60
+cutoff_sec = 300
+
+receiving_topics = ""
 
 def time_is_good(timestamp):
-	#time_cutoff = current time - 1 hour (in seconds)
-	time_cutoff = int(time.time()) - 60
-	if timestamp > time_cutoff:
-		return True
-	else:
-		return False
+    #time_cutoff = current time - 1 hour (in seconds)
+    time_cutoff = int(time.time()) - cutoff_sec
+    if timestamp > time_cutoff:
+        return True
+    else:
+        return False
 
 #pops the next item to print in the scrolling display
 #	from the front of headline_list, ensures the timestamp
@@ -52,36 +54,37 @@ def get_next_item():
 
 #main function of the display thread
 def display3(stdscr):
-	global frametime, display_len, separator
-	stdscr = curses.initscr()
-	curses.noecho()
+    global frametime, display_len, separator, receiving_topics
+    stdscr = curses.initscr()
+    curses.noecho()
 
-	to_display = ""
-	save_idx = 0
-	while True:
-		while len(to_display) < display_len:
-			if(save_idx == 0):
-				item = get_next_item() + separator
-			for i in range(save_idx, len(item)):
-				to_display += item[i]
-				if len(to_display) == display_len:
-					if(i+1 == len(item)):
-						save_idx = 0
-					else:
-						save_idx = i+1
-					break
-		temp = to_display[1:]
-		stdscr.addstr(0,0, to_display)
-		to_display = temp
-		stdscr.refresh()
-		time.sleep(frametime)
+    to_display = ""
+    save_idx = 0
+    while True:
+        while len(to_display) < display_len:
+            if(save_idx == 0):
+                item = get_next_item() + separator
+            for i in range(save_idx, len(item)):
+                to_display += item[i]
+                if len(to_display) == display_len:
+                    if(i+1 == len(item)):
+                        save_idx = 0
+                    else:
+                        save_idx = i+1
+                    break
+        temp = to_display[1:]
+        stdscr.addstr(0,0, receiving_topics)
+        stdscr.addstr(1,0, to_display)
+        to_display = temp
+        stdscr.refresh()
+        time.sleep(frametime)
 		
 def client_callback(ch, method, properties, body):
-	#data should be tuple (headline, timestamp)
-	item = pickle.loads(body)
-	list_lock.acquire()
-	headline_list.append(item)
-	list_lock.release()
+    #data should be tuple (headline, timestamp)
+    item = pickle.loads(body)
+    list_lock.acquire()
+    headline_list.append(item)
+    list_lock.release()
 
 def setup_queues(bindings):
     #setup rabbitmq stuff
@@ -107,8 +110,10 @@ def setup_queues(bindings):
     channel.start_consuming()
 
 if __name__ == "__main__":
-    #spawn display thread:
-    queue_thread = threading.Thread(target=setup_queues, kwargs={"bindings": (sys.argv)})
+    for item in sys.argv[1:]:
+        receiving_topics += separator + item
+
+    queue_thread = threading.Thread(target=setup_queues, kwargs={"bindings": sys.argv})
     queue_thread.start()
     
     display_thread = threading.Thread(curses.wrapper(display3))
