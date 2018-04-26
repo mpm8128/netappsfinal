@@ -42,7 +42,7 @@ def get_next_item():
     
     item = ""
     if headline_list:
-        (headline, timestamp) = headline_list.pop(0)
+        (headline, timestamp, topic) = headline_list.pop(0)
         if(time_is_good(timestamp)):
             headline_list.append((headline, timestamp))
             item = headline
