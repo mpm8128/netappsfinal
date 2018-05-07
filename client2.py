@@ -13,6 +13,9 @@ import threading
 headline_list = []
 list_lock = threading.RLock()
 
+server_ip = "172.29.63.121"
+server_port = 5672
+
 frametime = 0.1
 display_len = 50
 separator = " ||| "
@@ -89,7 +92,7 @@ def client_callback(ch, method, properties, body):
 def setup_queues(bindings):
     #setup rabbitmq stuff
     credentials = pika.PlainCredentials(rmq_params["username"], rmq_params["password"])
-    parameters = pika.ConnectionParameters(virtual_host=rmq_params["vhost"], 
+    parameters = pika.ConnectionParameters(server_ip, server_port, virtual_host=rmq_params["vhost"], 
                                                 credentials=credentials)
     connection = pika.BlockingConnection(parameters)
     channel = connection.channel()
