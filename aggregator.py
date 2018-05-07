@@ -10,10 +10,13 @@ import pickle
 check_rate = 60 # Time (in seconds) between checks
 
 def send_message(headline, timestamp, topic):
-    print("Sending '%s' to %s" % (headline, topic))
-    to_send = pickle.dumps((headline,timestamp,topic))
-    time.sleep(0.1)
-    channel.basic_publish(exchange=rmq_params["exchange"], routing_key=topic, body=to_send)
+    global connection
+    try:
+        print("Sending '%s' to %s" % (headline, topic))
+        to_send = pickle.dumps((headline,timestamp))
+        channel.basic_publish(exchange=rmq_params["exchange"], routing_key=topic, body=to_send)
+    except Exception as e:
+        print(e)
         
 def publish_headlines(new_headlines, topic):
     timestamp = time.time()
@@ -75,7 +78,7 @@ def get_new_headlines():
 if __name__ == "__main__":
     # Set Up RabbitMQ stuff
     credentials = pika.PlainCredentials(rmq_params["username"], rmq_params["password"])
-    parameters = pika.ConnectionParameters('172.29.51.245', 5672, virtual_host=rmq_params["vhost"], credentials=credentials)
+    parameters = pika.ConnectionParameters('172.29.63.121', 5672, virtual_host=rmq_params["vhost"], credentials=credentials)
     connection = pika.BlockingConnection(parameters)
     channel = connection.channel()
     
